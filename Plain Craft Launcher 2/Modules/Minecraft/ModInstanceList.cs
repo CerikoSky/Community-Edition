@@ -63,7 +63,8 @@ public static class ModInstanceList
     ///     是否清理 .pclignore 文件。
     /// </summary>
     private static bool ShouldCleanPclIgnore =>
-        _isFirstMcInstanceListLoad && !ModLoader.loaderTaskbar.Any(l => l.State == ModBase.LoadState.Loading);
+        _isFirstMcInstanceListLoad && !ModLoader.loaderTaskbar.Any(l =>
+            l.State is ModBase.LoadState.Waiting or ModBase.LoadState.Loading);
 
     /// <summary>
     ///     加载 Minecraft 文件夹的实例列表。
@@ -130,7 +131,7 @@ public static class ModInstanceList
                 mcInstanceList = InitMcInstanceListWithoutCache(path);
             }
 
-            _isFirstMcInstanceListLoad = false;
+            _isFirstMcInstanceListLoad = ShouldCleanPclIgnore;
 
             if (loader.IsAborted)
                 return;
