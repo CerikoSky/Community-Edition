@@ -3750,8 +3750,8 @@ public static class ModDownloadLib
                 { OnStateChanged = McInstallState };
 
             // 启动
-            ModLoader.LoaderTaskbarAdd(loader);
             loader.Start(request.targetInstanceFolder);
+            ModLoader.LoaderTaskbarAdd(loader);
             ModMain.frmMain.BtnExtraDownload.ShowRefresh();
             ModMain.frmMain.BtnExtraDownload.Ribble();
             return true;
