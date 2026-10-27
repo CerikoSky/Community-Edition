@@ -106,6 +106,9 @@ public static class ModInstanceList
                            ModBase.Val(ModBase.ReadIni(Path.Combine(path, "PCL.ini"), "InstanceCache")) ==
                            folderListCheck;
 
+            var cleanPclIgnore = _isFirstMcInstanceListLoad &&
+                                 !ModLoader.loaderTaskbar.Any(l => l.State == ModBase.LoadState.Loading);
+
             if (useCache)
             {
                 var cachedResult = InitMcInstanceListWithCache(path);
@@ -124,7 +127,8 @@ public static class ModInstanceList
                 mcInstanceList = InitMcInstanceListWithoutCache(path);
             }
 
-            _isFirstMcInstanceListLoad = false;
+            if (cleanPclIgnore)
+                _isFirstMcInstanceListLoad = false;
 
             if (loader.IsAborted)
                 return;
@@ -204,7 +208,8 @@ public static class ModInstanceList
                     if (File.Exists(versionFolder + ".pclignore"))
                     {
                         if (_isFirstMcInstanceListLoad &&
-                            !ModLoader.loaderTaskbar.Any(l => l.State == ModBase.LoadState.Loading))
+                            !ModLoader.loaderTaskbar.Any(l => l.State == ModBase.LoadState.Loading) &&
+                            !Directory.Exists(versionFolder + "PCLInstallBackups\\"))
                         {
                             ModBase.Log("[Minecraft] 清理残留的忽略项目：" + versionFolder); // #2781
                             File.Delete(versionFolder + ".pclignore");
@@ -336,7 +341,8 @@ public static class ModInstanceList
             if (File.Exists(instanceFolder + ".pclignore"))
             {
                 if (_isFirstMcInstanceListLoad &&
-                    !ModLoader.loaderTaskbar.Any(l => l.State == ModBase.LoadState.Loading))
+                    !ModLoader.loaderTaskbar.Any(l => l.State == ModBase.LoadState.Loading) &&
+                    !Directory.Exists(instanceFolder + "PCLInstallBackups\\"))
                 {
                     ModBase.Log("[Minecraft] 清理残留的忽略项目：" + instanceFolder); // #2781
                     try
