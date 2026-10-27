@@ -55,9 +55,15 @@ public static class ModInstanceList
 
     /// <summary>
     ///     是否为本次打开 PCL 后第一次加载实例列表。
-    ///     这会清理所有 .pclignore 文件，而非跳过这些对应实例。
+    ///     首次加载会清理残留的 .pclignore 文件，而非跳过这些对应实例。
     /// </summary>
     private static bool _isFirstMcInstanceListLoad = true;
+
+    /// <summary>
+    ///     是否清理 .pclignore 文件。
+    /// </summary>
+    private static bool ShouldCleanPclIgnore =>
+        _isFirstMcInstanceListLoad && !ModLoader.loaderTaskbar.Any(l => l.State == ModBase.LoadState.Loading);
 
     /// <summary>
     ///     加载 Minecraft 文件夹的实例列表。
@@ -106,6 +112,8 @@ public static class ModInstanceList
                            ModBase.Val(ModBase.ReadIni(Path.Combine(path, "PCL.ini"), "InstanceCache")) ==
                            folderListCheck;
 
+            var cleanPclIgnore = ShouldCleanPclIgnore;
+
             if (useCache)
             {
                 var cachedResult = InitMcInstanceListWithCache(path);
@@ -124,7 +132,8 @@ public static class ModInstanceList
                 mcInstanceList = InitMcInstanceListWithoutCache(path);
             }
 
-            _isFirstMcInstanceListLoad = false;
+            if (cleanPclIgnore)
+                _isFirstMcInstanceListLoad = false;
 
             if (loader.IsAborted)
                 return;
@@ -203,7 +212,7 @@ public static class ModInstanceList
                     var versionFolder = $@"{path}versions\{folder}\";
                     if (File.Exists(versionFolder + ".pclignore"))
                     {
-                        if (_isFirstMcInstanceListLoad)
+                        if (ShouldCleanPclIgnore)
                         {
                             ModBase.Log("[Minecraft] 清理残留的忽略项目：" + versionFolder); // #2781
                             File.Delete(versionFolder + ".pclignore");
@@ -334,7 +343,7 @@ public static class ModInstanceList
             var instanceFolder = folder.FullName + @"\";
             if (File.Exists(instanceFolder + ".pclignore"))
             {
-                if (_isFirstMcInstanceListLoad)
+                if (ShouldCleanPclIgnore)
                 {
                     ModBase.Log("[Minecraft] 清理残留的忽略项目：" + instanceFolder); // #2781
                     try
