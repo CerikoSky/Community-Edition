@@ -20,6 +20,8 @@ public static class ModInstanceList
 
     private static object _McInstanceSelected_mcInstanceSelectedLast = 0; // 为 0 以保证与 Nothing 不相同，使得 UI 显示可以正常初始化
 
+    private static bool _isReplaceArgumentsRefreshed;
+
     /// <summary>
     ///     当前的 Minecraft 版本。
     /// </summary>
@@ -34,7 +36,9 @@ public static class ModInstanceList
             _McInstanceSelected_mcInstanceSelectedLast = value;
             // 重置缓存的 Mod 文件夹
             PageDownloadCompDetail.cachedFolder.Clear();
-            if (value is not null)
+            if (value is not null && !_isReplaceArgumentsRefreshed)
+            {
+                _isReplaceArgumentsRefreshed = true;
                 ModBase.RunInNewThread(() =>
                 {
                     value.Load();
@@ -43,7 +47,8 @@ public static class ModInstanceList
                         if (ReferenceEquals(McMcInstanceSelected, value))
                             ModMain.frmLaunchRight?.RefreshReplaceArguments();
                     });
-                }, "主页替换内容刷新");
+                }, "主页替换标记刷新");
+            }
         }
     }
 

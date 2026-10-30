@@ -799,7 +799,6 @@ public partial class PageLaunchLeft
     /// <param name="targetLoginType">目标验证方式，若正在创建档案需填</param>
     public void RefreshPage(bool anim, ModLaunch.McLoginType targetLoginType = default)
     {
-        ModMain.frmLaunchRight?.RefreshReplaceArguments();
         var type = default(PageType);
         if (targetLoginType != default)
         {
