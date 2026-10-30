@@ -439,7 +439,7 @@ public partial class PageLaunchRight : IRefreshable
 
     public void RefreshReplaceArguments()
     {
-        loadedContentHash = -1;
+        forceReplaceArgumentsRefresh = true;
         Refresh();
     }
 
@@ -470,11 +470,12 @@ public partial class PageLaunchRight : IRefreshable
         {
             // 如果加载目标内容一致则不加载
             var hash = content.GetHashCode();
-            if (hash == loadedContentHash)
+            if (!forceReplaceArgumentsRefresh && hash == loadedContentHash)
             {
                 _ApplyHomepageLivePatchesFromFile();
                 return;
             }
+            forceReplaceArgumentsRefresh = false;
             loadedContentHash = hash;
             // 实际加载内容
             PanCustom.Children.Clear();
@@ -536,6 +537,7 @@ public partial class PageLaunchRight : IRefreshable
     }
 
     private int loadedContentHash = -1;
+    private bool forceReplaceArgumentsRefresh;
     private readonly object loadContentLock = new();
     private static void _ShowSanitizeHints(XamlEventSanitizer.SanitizeResult result)
     {
