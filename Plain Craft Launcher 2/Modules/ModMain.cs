@@ -1183,7 +1183,7 @@ public static class ModMain
     if (profile is not null)
     {
         text = text.Replace("{user}", replacer(profile.UserName));
-        text = text.Replace("{uuid}", replacer(profile.Uuid.ToLower()));
+        text = text.Replace("{uuid}", replacer(profile.Uuid?.ToLower()));
         
         switch (profile.ProfileType)
         {
@@ -1194,8 +1194,10 @@ public static class ModMain
                 text = text.Replace("{login}", replacer("正版"));
                 break;
             case ProfileType.Authlib:
-            case ProfileType.YggdrasilConnect:
                 text = text.Replace("{login}", replacer("Authlib-Injector"));
+                break;
+            case ProfileType.YggdrasilConnect:
+                text = text.Replace("{login}", replacer("Yggdrasil Connect"));
                 break;
         }
     }

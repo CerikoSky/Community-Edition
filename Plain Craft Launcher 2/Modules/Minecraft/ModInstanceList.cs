@@ -36,14 +36,12 @@ public static class ModInstanceList
             _McInstanceSelected_mcInstanceSelectedLast = value;
             // 重置缓存的 Mod 文件夹
             PageDownloadCompDetail.cachedFolder.Clear();
-            if (!_isReplaceArgumentsRefreshed && value is not null)
+            if (value is not null && !_isReplaceArgumentsRefreshed)
             {
                 _isReplaceArgumentsRefreshed = true;
-                var instance = value;
                 ModBase.RunInNewThread(() =>
                 {
-                    if (!instance.IsLoaded)
-                        instance.Load();
+                    value.Load();
                     ModBase.RunInUi(() => ModMain.frmLaunchRight?.RefreshReplaceArguments());
                 }, "主页替换内容刷新");
             }

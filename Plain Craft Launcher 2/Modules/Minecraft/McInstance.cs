@@ -21,6 +21,7 @@ public class McInstance
         public McInstanceCardType displayType = McInstanceCardType.Auto;
 
         public bool IsLoaded;
+        private readonly object _loadLock = new();
 
         /// <summary>
         /// 是否已初始化从 JAR 中读取 version.json。
@@ -690,6 +691,12 @@ public class McInstance
         ///     加载 Minecraft 实例的详细信息。不使用其缓存，且会更新缓存。
         /// </summary>
         public McInstance Load()
+        {
+            lock (_loadLock)
+                return LoadInternal();
+        }
+
+        private McInstance LoadInternal()
         {
             try
             {
