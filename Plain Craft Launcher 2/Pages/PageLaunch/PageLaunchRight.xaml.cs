@@ -488,7 +488,7 @@ public partial class PageLaunchRight : IRefreshable
             var loadStartTime = DateTime.Now;
             try
             {
-                content = ModMain.ArgumentReplace(content, System.Security.SecurityElement.Escape);
+                content = ModMain.ArgumentReplace(content, ModBase.EscapeXML);
                 while (content.Contains("xmlns"))
                     content = content.RegexReplace("xmlns[^\"']*(\"|')[^\"']*(\"|')", "").Replace("xmlns", "");
                 content =
@@ -852,7 +852,7 @@ public partial class PageLaunchRight : IRefreshable
 
     private static void _ReplacePanelChildren(Panel panel, string childrenXaml)
     {
-        var content = ModMain.ArgumentReplace(childrenXaml, System.Security.SecurityElement.Escape);
+        var content = ModMain.ArgumentReplace(childrenXaml, ModBase.EscapeXML);
         while (content.Contains("xmlns"))
             content = content.RegexReplace("xmlns[^\"']*(\"|')[^\"']*(\"|')", "").Replace("xmlns", "");
 

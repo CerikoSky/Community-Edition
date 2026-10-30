@@ -1196,9 +1196,6 @@ public static class ModMain
             case ProfileType.Authlib:
                 text = text.Replace("{login}", replacer("Authlib-Injector"));
                 break;
-            case ProfileType.YggdrasilConnect:
-                text = text.Replace("{login}", replacer("Yggdrasil Connect"));
-                break;
         }
     }
     else
