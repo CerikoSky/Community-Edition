@@ -439,8 +439,6 @@ public partial class PageLaunchRight : IRefreshable
 
     public void RefreshReplaceArguments()
     {
-        if (ModMain.frmMain.pageCurrent.page != FormMain.PageType.Launch)
-            return;
         loadedContentHash = -1;
         Refresh();
     }
