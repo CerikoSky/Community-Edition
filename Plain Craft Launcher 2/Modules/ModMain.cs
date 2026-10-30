@@ -15,8 +15,6 @@ using PCL.Core.App;
 using PCL.Core.App.Configuration;
 using PCL.Core.App.Localization;
 using PCL.Core.Minecraft.IdentityModel.OAuth;
-using PCL.Core.Minecraft.Profile;
-using PCL.Core.Minecraft.Profile.Models;
 using PCL.Core.UI;
 using PCL.Core.Utils;
 using PCL.Core.Utils.OS;
@@ -1179,21 +1177,20 @@ public static class ModMain
     }
     
     // 验证信息
-    var profile = ProfileService.Current;
-    if (profile is not null)
+    if (ModLaunch.mcLoginLoader.State == ModBase.LoadState.Finished)
     {
-        text = text.Replace("{user}", replacer(profile.UserName));
-        text = text.Replace("{uuid}", replacer(profile.Uuid?.ToLower()));
+        text = text.Replace("{user}", replacer(ModLaunch.mcLoginLoader.output.Name));
+        text = text.Replace("{uuid}", replacer(ModLaunch.mcLoginLoader.output.Uuid.ToLower()));
         
-        switch (profile.ProfileType)
+        switch (ModLaunch.mcLoginLoader.input.LoginType)
         {
-            case ProfileType.Offline:
+            case ModLaunch.McLoginType.Legacy:
                 text = text.Replace("{login}", replacer("离线"));
                 break;
-            case ProfileType.Microsoft:
+            case ModLaunch.McLoginType.Ms:
                 text = text.Replace("{login}", replacer("正版"));
                 break;
-            case ProfileType.Authlib:
+            case ModLaunch.McLoginType.Auth:
                 text = text.Replace("{login}", replacer("Authlib-Injector"));
                 break;
         }

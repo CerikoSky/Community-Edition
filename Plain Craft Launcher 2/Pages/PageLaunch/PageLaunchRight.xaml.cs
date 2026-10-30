@@ -852,7 +852,7 @@ public partial class PageLaunchRight : IRefreshable
 
     private static void _ReplacePanelChildren(Panel panel, string childrenXaml)
     {
-        var content = ModMain.ArgumentReplace(childrenXaml, ModBase.EscapeXML);
+        var content = ModMain.ArgumentReplace(childrenXaml);
         while (content.Contains("xmlns"))
             content = content.RegexReplace("xmlns[^\"']*(\"|')[^\"']*(\"|')", "").Replace("xmlns", "");
 
