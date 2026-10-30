@@ -32,10 +32,12 @@ public static class ModInstanceList
                 return;
             field = value; // 由于有可能是 Nothing，导致无法初始化，才得这样弄一圈
             _McInstanceSelected_mcInstanceSelectedLast = value;
-            if (value is null)
-                return;
+            if (value is not null && !value.IsLoaded)
+                value.Load();
             // 重置缓存的 Mod 文件夹
-            PageDownloadCompDetail.cachedFolder.Clear();
+            if (value is not null)
+                PageDownloadCompDetail.cachedFolder.Clear();
+            ModBase.RunInUi(() => ModMain.frmLaunchRight?.RefreshReplaceArguments());
         }
     }
 

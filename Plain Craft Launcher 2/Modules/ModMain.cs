@@ -15,6 +15,7 @@ using PCL.Core.App;
 using PCL.Core.App.Configuration;
 using PCL.Core.App.Localization;
 using PCL.Core.Minecraft.IdentityModel.OAuth;
+using PCL.Core.Minecraft.Profile;
 using PCL.Core.UI;
 using PCL.Core.Utils;
 using PCL.Core.Utils.OS;
@@ -1177,12 +1178,13 @@ public static class ModMain
     }
     
     // 验证信息
-    if (ModLaunch.mcLoginLoader.State == ModBase.LoadState.Finished)
+    var loginData = ProfileService.Current is null ? null : ProfileUi.GetLoginData();
+    if (loginData is not null)
     {
-        text = text.Replace("{user}", replacer(ModLaunch.mcLoginLoader.output.Name));
-        text = text.Replace("{uuid}", replacer(ModLaunch.mcLoginLoader.output.Uuid.ToLower()));
+        text = text.Replace("{user}", replacer(ProfileService.Current.UserName));
+        text = text.Replace("{uuid}", replacer(ProfileService.Current.Uuid.ToLower()));
         
-        switch (ModLaunch.mcLoginLoader.input.LoginType)
+        switch (loginData.LoginType)
         {
             case ModLaunch.McLoginType.Legacy:
                 text = text.Replace("{login}", replacer("离线"));
