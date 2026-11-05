@@ -7,6 +7,7 @@ namespace PCL.Core.App.Configuration.Storage;
 public class DynamicCacheConfigStorage : ConfigStorage
 {
     private readonly Dictionary<object, ConfigStorage> _cache = [];
+    private readonly object CacheLock = new();
     private ConfigStorage? _nullContextCache;
 
     /// <summary>
@@ -17,15 +18,21 @@ public class DynamicCacheConfigStorage : ConfigStorage
     protected override bool OnAccess<TKey, TValue>(StorageAction action, ref TKey key, [NotNullWhen(true)] ref TValue value, object? context)
     {
         ConfigStorage? storage;
-        if (context is null) storage = _nullContextCache;
-        else _cache.TryGetValue(context, out storage);
+        lock (CacheLock)
+        {
+            if (context is null) storage = _nullContextCache;
+            else _cache.TryGetValue(context, out storage);
+        }
         if (storage is null)
         {
             try
             {
-                storage = StorageFactory(context);
-                if (context is null) _nullContextCache = storage;
-                else _cache[context] = storage;
+                var created = StorageFactory(context);
+                lock (CacheLock)
+                {
+                    if (context is null) storage = _nullContextCache ??= created;
+                    else if (!_cache.TryGetValue(context, out storage)) _cache[context] = storage = created;
+                }
             }
             catch (Exception ex)
             {
@@ -37,18 +44,29 @@ public class DynamicCacheConfigStorage : ConfigStorage
 
     protected override void OnStop()
     {
-        foreach (var item in _cache.Values) item.Stop();
-        _cache.Clear();
+        ConfigStorage[] storages;
+        lock (CacheLock)
+        {
+            storages = _nullContextCache is null ? [.. _cache.Values] : [.. _cache.Values, _nullContextCache];
+            _nullContextCache = null;
+            _cache.Clear();
+        }
+        foreach (var item in storages) item.Stop();
     }
 
     public bool InvalidateCache(object context)
     {
-        var result = _cache.TryGetValue(context, out var center);
-        if (result)
+        ConfigStorage? center;
+        lock (CacheLock)
         {
-            center?.Stop();
-            _cache.Remove(context);
+            if (context is null)
+            {
+                center = _nullContextCache;
+                _nullContextCache = null;
+            }
+            else if (!_cache.Remove(context, out center)) return false;
         }
-        return result;
+        center?.Stop();
+        return true;
     }
 }
