@@ -1,13 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 
 namespace PCL.Core.App.Configuration.Storage;
 
 public class DynamicCacheConfigStorage : ConfigStorage
 {
     private readonly Dictionary<object, ConfigStorage> _cache = [];
+    private readonly HashSet<object> _pending = [];
+    private readonly object CacheLock = new();
     private ConfigStorage? _nullContextCache;
+    private bool _stopping;
 
     /// <summary>
     /// 存取仓库工厂。在没有匹配的上下文实例时将被调用，以创建新的上下文实例。
@@ -17,19 +21,32 @@ public class DynamicCacheConfigStorage : ConfigStorage
     protected override bool OnAccess<TKey, TValue>(StorageAction action, ref TKey key, [NotNullWhen(true)] ref TValue value, object? context)
     {
         ConfigStorage? storage;
-        if (context is null) storage = _nullContextCache;
-        else _cache.TryGetValue(context, out storage);
+        lock (CacheLock)
+        {
+            if (context is null) storage = _nullContextCache;
+            else _cache.TryGetValue(context, out storage);
+        }
         if (storage is null)
         {
+            lock (CacheLock) _pending.Add(context ?? "");
+            ConfigStorage? created;
             try
             {
-                storage = StorageFactory(context);
-                if (context is null) _nullContextCache = storage;
-                else _cache[context] = storage;
+                created = StorageFactory(context);
             }
             catch (Exception ex)
             {
                 throw new Exception("Failed to invoke storage factory", ex);
+            }
+            lock (CacheLock)
+            {
+                _pending.Remove(context ?? "");
+                Monitor.PulseAll(CacheLock);
+                var replaced = _stopping
+                    || (context is null ? _nullContextCache : _cache.GetValueOrDefault(context)) is not null;
+                if (replaced) created.Stop();
+                else if (context is null) storage = _nullContextCache = created;
+                else storage = _cache[context] = created;
             }
         }
         return storage.Access(action, ref key, ref value, context);
@@ -37,18 +54,32 @@ public class DynamicCacheConfigStorage : ConfigStorage
 
     protected override void OnStop()
     {
-        foreach (var item in _cache.Values) item.Stop();
-        _cache.Clear();
+        ConfigStorage[] storages;
+        lock (CacheLock)
+        {
+            _stopping = true;
+            while (_pending.Count > 0) Monitor.Wait(CacheLock);
+            storages = _nullContextCache is null ? [.. _cache.Values] : [.. _cache.Values, _nullContextCache];
+            _nullContextCache = null;
+            _cache.Clear();
+        }
+        foreach (var item in storages) item.Stop();
     }
 
     public bool InvalidateCache(object context)
     {
-        var result = _cache.TryGetValue(context, out var center);
-        if (result)
+        ConfigStorage? center;
+        lock (CacheLock)
         {
-            center?.Stop();
-            _cache.Remove(context);
+            while (_pending.Contains(context ?? "")) Monitor.Wait(CacheLock);
+            if (context is null)
+            {
+                center = _nullContextCache;
+                _nullContextCache = null;
+            }
+            else if (!_cache.Remove(context, out center)) return false;
         }
-        return result;
+        center?.Stop();
+        return true;
     }
 }
