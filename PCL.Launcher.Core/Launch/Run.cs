@@ -232,6 +232,12 @@ public static partial class GameLaunch
         if (_IsMinecraftVersionUnder1Dot1(mcReleaseTime))
             return "none";
 
+        // 13w16a ~ 13w23b 只有 en_US.lang，其它语言 NPE 会崩溃
+        if (mcReleaseTime.HasValue
+            && mcReleaseTime.Value >= new DateTime(2013, 4, 21)
+            && mcReleaseTime.Value < new DateTime(2013, 6, 13))
+            return "en_US";
+
         var useLegacyRegionCase = _ShouldUseLegacyMinecraftLanguageCode(mcReleaseTime);
         var languageCode = shouldUseLauncherLanguage
             ? LocalizationService.CurrentLanguage.Code
