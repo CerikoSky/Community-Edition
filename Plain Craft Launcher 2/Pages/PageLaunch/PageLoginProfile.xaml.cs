@@ -122,6 +122,14 @@ public partial class PageLoginProfile : IPageView
     }
 
     private void BtnNew_Click(object sender, EventArgs e) => _vm.CreateProfileCommand.Execute(null);
+    private void PanButtons_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) => BtnNew.ScaleDown();
+    private void PanButtons_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        BtnNew.ScaleRestore();
+        BtnNew_Click(sender, e);
+    }
+
+    private void PanButtons_MouseLeave(object sender, MouseEventArgs e) => BtnNew.ScaleRestore();
 
     private void EditProfileUuid(object sender, EventArgs e)
     {

@@ -390,12 +390,16 @@ public partial class MyIconButton
         isMouseDown = true;
         Focus();
         // 指向
-        Animations.AniStart(
-            Animations.AaScaleTransform(PanBack,
-                0.8d - ((ScaleTransform)PanBack.RenderTransform).ScaleX,
-                ease: new Animations.AniEaseOutFluent(Animations.AniEasePower.Strong)),
-            "MyIconButton Scale " + Uuid);
+        ScaleDown();
     }
+
+    public void ScaleDown() => Animations.AniStart(
+        Animations.AaScaleTransform(PanBack, 0.8d - ((ScaleTransform)PanBack.RenderTransform).ScaleX,
+            ease: new Animations.AniEaseOutFluent(Animations.AniEasePower.Strong)), "MyIconButton Scale " + Uuid);
+
+    public void ScaleRestore() => Animations.AniStart(
+        Animations.AaScaleTransform(PanBack, 1d - ((ScaleTransform)PanBack.RenderTransform).ScaleX, 250,
+            ease: new Animations.AniEaseOutFluent()), "MyIconButton Scale " + Uuid);
 
     private void Button_MouseUp()
     {
