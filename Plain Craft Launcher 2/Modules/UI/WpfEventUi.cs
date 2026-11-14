@@ -50,8 +50,9 @@ public sealed class WpfEventUi : IEventUi
         {
             // 已经停留在同一内容上则不再重复压栈
             if (Launcher.frmMain?.pageCurrent.helpPage is { Content: { } current }
+                && current.SourcePath == content.SourcePath
                 && current.Title == content.Title
-                && current.Xaml == content.Xaml)
+                && Launcher.ArgumentReplace(current.Xaml) == Launcher.ArgumentReplace(content.Xaml))
                 return;
 
             var page = new PageHelpDetail(content);
