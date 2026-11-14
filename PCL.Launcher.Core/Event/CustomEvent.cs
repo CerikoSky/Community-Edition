@@ -1,4 +1,5 @@
-﻿using PCL.Core.App;
+﻿using System.Collections.Concurrent;
+using PCL.Core.App;
 using PCL.Core.App.Configuration;
 using PCL.Core.App.Localization;
 using PCL.Core.Platform;
@@ -9,9 +10,7 @@ namespace PCL;
 
 public class CustomEvent
 {
-    private static readonly object HelpLock = new();
-    private static string _lastHelpUrl = "";
-    private static DateTime _lastHelpTime;
+    private static readonly ConcurrentDictionary<string, byte> _helpOpening = new();
 
     /// <summary>
     ///     禁止自定义主页写入的高危设置黑名单
@@ -383,15 +382,8 @@ public class CustomEvent
             return;
         }
 
-        // 短时间内的同一帮助只处理一次
-        var now = DateTime.Now;
-        lock (HelpLock)
-        {
-            if (args[0] == _lastHelpUrl && (now - _lastHelpTime).TotalMilliseconds < 1500)
-                return;
-            _lastHelpUrl = args[0];
-            _lastHelpTime = now;
-        }
+        // 同一帮助地址同时只处理一次，避免鼠标事件在页面切换时被重放导致反复下载与切换
+        if (!_helpOpening.TryAdd(args[0], 0)) return;
 
         LauncherCommon.RunInNewThread(() =>
         {
@@ -408,6 +400,11 @@ public class CustomEvent
                     Lang.Text("Event.Error.ExecutionFailed", type, arg),
                     LauncherLogLevel.Msgbox,
                     userSummary: Lang.Text("Event.Error.ExecutionFailed", type, arg));
+            }
+            finally
+            {
+                // 完成后释放，既允许失败后重试，也避免下载期间被重复放行
+                _helpOpening.TryRemove(args[0], out _);
             }
         });
     }
