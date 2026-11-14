@@ -48,6 +48,8 @@ public sealed class WpfEventUi : IEventUi
         var content = PageHelpDetail.LoadContent(location);
         PlatformServices.UiDispatcher?.Post(() =>
         {
+            if (Launcher.frmMain?.pageCurrent.helpPage?.SourcePath == content.SourcePath) return;
+
             var page = new PageHelpDetail(content);
             Launcher.frmMain?.PageChange(
                 new FormMain.PageStackData

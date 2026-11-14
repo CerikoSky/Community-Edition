@@ -1,4 +1,4 @@
-﻿using PCL.Core.App;
+using PCL.Core.App;
 using PCL.Core.App.Configuration;
 using PCL.Core.App.Localization;
 using PCL.Core.Platform;
@@ -379,6 +379,16 @@ public class CustomEvent
             return;
         }
 
+        if (args[0] == _lastOpenedHelpUrl
+            && (DateTime.Now - _lastOpenedHelpTime).TotalSeconds < 3)
+        {
+            LauncherCommon.Log($"[Control] 跳过重复的打开帮助事件: {args[0]}");
+            return;
+        }
+
+        _lastOpenedHelpUrl = args[0];
+        _lastOpenedHelpTime = DateTime.Now;
+
         LauncherCommon.RunInNewThread(() =>
         {
             try
@@ -397,6 +407,9 @@ public class CustomEvent
             }
         });
     }
+
+    private static string _lastOpenedHelpUrl = "";
+    private static DateTime _lastOpenedHelpTime = DateTime.MinValue;
 
     public static string[] GetAbsoluteUrls(string relativeUrl, EventType type)
     {
