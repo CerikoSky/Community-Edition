@@ -15,6 +15,8 @@ public partial class PageHelpDetail : IRefreshable, IPageView
 
     public string Title => _vm.Title;
 
+    internal HelpContent? Content => _vm.Content;
+
     internal PageHelpDetail(HelpContent content)
     {
         InitializeComponent();

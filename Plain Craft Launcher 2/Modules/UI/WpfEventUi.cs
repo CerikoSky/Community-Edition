@@ -48,6 +48,12 @@ public sealed class WpfEventUi : IEventUi
         var content = PageHelpDetail.LoadContent(location);
         PlatformServices.UiDispatcher?.Post(() =>
         {
+            // 已经停留在同一内容上则不再重复压栈
+            if (Launcher.frmMain?.pageCurrent.helpPage is { Content: { } current }
+                && current.Title == content.Title
+                && current.Xaml == content.Xaml)
+                return;
+
             var page = new PageHelpDetail(content);
             Launcher.frmMain?.PageChange(
                 new FormMain.PageStackData
