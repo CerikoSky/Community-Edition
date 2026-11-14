@@ -15,9 +15,12 @@ public partial class PageHelpDetail : IRefreshable, IPageView
 
     public string Title => _vm.Title;
 
+    internal int ContentHash { get; }
+
     internal PageHelpDetail(HelpContent content)
     {
         InitializeComponent();
+        ContentHash = content.Xaml.GetHashCode();
         _vm = new PageHelpDetailViewModel(content);
         DataContext = _vm;
         _vm.PropertyChanged += VmOnPropertyChanged;

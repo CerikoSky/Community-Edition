@@ -392,7 +392,7 @@ public class CustomEvent
             {
                 var actualPaths = GetAbsoluteUrls(args[0], type);
                 var location = actualPaths[0];
-                EventUi.OpenHelp(location, () => OpeningHelpUrls.TryRemove(args[0], out _));
+                EventUi.OpenHelp(location, args[0]);
             }
             catch (Exception ex)
             {
@@ -407,6 +407,8 @@ public class CustomEvent
     }
 
     private static readonly ConcurrentDictionary<string, bool> OpeningHelpUrls = new();
+
+    internal static void OnHelpOpened(string url) => OpeningHelpUrls.TryRemove(url, out _);
 
     public static string[] GetAbsoluteUrls(string relativeUrl, EventType type)
     {

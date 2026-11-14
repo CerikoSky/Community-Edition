@@ -9,7 +9,12 @@ public interface IEventUi
     void SwitchPage(string pageType, string? subType);
     void StartModpackInstall();
     void StartCustomDownload(string url, string savePath, string? fileName);
-    void OpenHelp(string location, Action? onOpened = null);
+    void OpenHelp(string location);
+}
+
+public interface IHelpOpenedNotifier
+{
+    void OpenHelp(string location, Action onOpened);
 }
 
 public static class EventUi
@@ -46,8 +51,16 @@ public static class EventUi
         Current?.StartCustomDownload(url, savePath, fileName);
     }
 
-    public static void OpenHelp(string location, Action? onOpened = null)
+    public static void OpenHelp(string location) => Current?.OpenHelp(location);
+
+    public static void OpenHelp(string location, string sourceUrl)
     {
-        Current?.OpenHelp(location, onOpened);
+        if (Current is IHelpOpenedNotifier notifier)
+        {
+            notifier.OpenHelp(location, () => CustomEvent.OnHelpOpened(sourceUrl));
+            return;
+        }
+        Current?.OpenHelp(location);
+        CustomEvent.OnHelpOpened(sourceUrl);
     }
 }

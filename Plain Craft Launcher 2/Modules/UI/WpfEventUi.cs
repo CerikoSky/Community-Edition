@@ -2,7 +2,7 @@ using PCL.Core.Platform;
 
 namespace PCL;
 
-public sealed class WpfEventUi : IEventUi
+public sealed class WpfEventUi : IEventUi, IHelpOpenedNotifier
 {
     public bool RefreshPage()
     {
@@ -43,13 +43,20 @@ public sealed class WpfEventUi : IEventUi
         PageToolsTest.StartCustomDownload(url, savePath, fileName);
     }
 
-    public void OpenHelp(string location, Action? onOpened = null)
+    public void OpenHelp(string location) => OpenHelp(location, null);
+
+    public void OpenHelp(string location, Action? onOpened)
     {
         var content = PageHelpDetail.LoadContent(location);
         PlatformServices.UiDispatcher?.Post(() =>
         {
             try
             {
+                // 已经停留在同一内容上则不再重复切换
+                if (Launcher.frmMain?.pageCurrent.helpPage is { } current
+                    && current.ContentHash == content.Xaml.GetHashCode())
+                    return;
+
                 var page = new PageHelpDetail(content);
                 Launcher.frmMain?.PageChange(
                     new FormMain.PageStackData
