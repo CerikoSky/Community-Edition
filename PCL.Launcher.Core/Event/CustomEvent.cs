@@ -9,6 +9,10 @@ namespace PCL;
 
 public class CustomEvent
 {
+    private static readonly object HelpLock = new();
+    private static string _lastHelpUrl = "";
+    private static DateTime _lastHelpTime;
+
     /// <summary>
     ///     禁止自定义主页写入的高危设置黑名单
     /// </summary>
@@ -377,6 +381,16 @@ public class CustomEvent
         {
             LauncherUi.Interaction?.OpenWebsite("https://docs.pclc.cc/ce");
             return;
+        }
+
+        // 短时间内的同一帮助只处理一次
+        var now = DateTime.Now;
+        lock (HelpLock)
+        {
+            if (args[0] == _lastHelpUrl && (now - _lastHelpTime).TotalMilliseconds < 1500)
+                return;
+            _lastHelpUrl = args[0];
+            _lastHelpTime = now;
         }
 
         LauncherCommon.RunInNewThread(() =>
