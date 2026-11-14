@@ -1,4 +1,5 @@
-﻿using PCL.Core.App;
+using System.Collections.Concurrent;
+using PCL.Core.App;
 using PCL.Core.App.Configuration;
 using PCL.Core.App.Localization;
 using PCL.Core.Platform;
@@ -379,13 +380,19 @@ public class CustomEvent
             return;
         }
 
+        if (!OpeningHelpUrls.TryAdd(args[0], true))
+        {
+            LauncherCommon.Log($"[Control] 跳过重复的打开帮助事件: {args[0]}");
+            return;
+        }
+
         LauncherCommon.RunInNewThread(() =>
         {
             try
             {
                 var actualPaths = GetAbsoluteUrls(args[0], type);
                 var location = actualPaths[0];
-                EventUi.OpenHelp(location);
+                EventUi.OpenHelp(location, () => OpeningHelpUrls.TryRemove(args[0], out _));
             }
             catch (Exception ex)
             {
@@ -394,9 +401,12 @@ public class CustomEvent
                     Lang.Text("Event.Error.ExecutionFailed", type, arg),
                     LauncherLogLevel.Msgbox,
                     userSummary: Lang.Text("Event.Error.ExecutionFailed", type, arg));
+                OpeningHelpUrls.TryRemove(args[0], out _);
             }
         });
     }
+
+    private static readonly ConcurrentDictionary<string, bool> OpeningHelpUrls = new();
 
     public static string[] GetAbsoluteUrls(string relativeUrl, EventType type)
     {

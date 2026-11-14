@@ -43,18 +43,25 @@ public sealed class WpfEventUi : IEventUi
         PageToolsTest.StartCustomDownload(url, savePath, fileName);
     }
 
-    public void OpenHelp(string location)
+    public void OpenHelp(string location, Action? onOpened = null)
     {
         var content = PageHelpDetail.LoadContent(location);
         PlatformServices.UiDispatcher?.Post(() =>
         {
-            var page = new PageHelpDetail(content);
-            Launcher.frmMain?.PageChange(
-                new FormMain.PageStackData
-                {
-                    page = FormMain.PageType.HelpDetail,
-                    helpPage = page
-                });
+            try
+            {
+                var page = new PageHelpDetail(content);
+                Launcher.frmMain?.PageChange(
+                    new FormMain.PageStackData
+                    {
+                        page = FormMain.PageType.HelpDetail,
+                        helpPage = page
+                    });
+            }
+            finally
+            {
+                onOpened?.Invoke();
+            }
         });
     }
 }
