@@ -12,6 +12,15 @@ public sealed record PageNavigationListResult(
 /// <summary>根据页面描述构建左栏分组与导航项。</summary>
 public static class PageNavigationListBuilder
 {
+    public static void Select(
+        IReadOnlyList<(SubPageId Sub, MyListItem Item)> items,
+        SubPageId selected)
+    {
+        var target = items.FirstOrDefault(pair => pair.Sub == selected).Item;
+        if (target is not null)
+            target.SetChecked(true, false, false);
+    }
+
     public static PageNavigationListResult Build(
         PageDescriptor page,
         StackPanel panel,
