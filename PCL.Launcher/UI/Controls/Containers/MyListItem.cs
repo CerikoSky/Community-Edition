@@ -989,6 +989,7 @@ public partial class MyListItem : Grid, IMyRadio
 
     private void RevertChecked(bool rawValue)
     {
+        _checkedSource = null;
         SetCheckedValue(rawValue);
         RefreshCheckedVisual(rawValue, false);
     }
@@ -1065,6 +1066,8 @@ public partial class MyListItem : Grid, IMyRadio
         const double customHeight = 20d;
         var animationKey = "MyListItem Checked " + Uuid;
         var check = RectCheckElement;
+        var source = _checkedSource;
+        _checkedSource = null;
 
         if (Type is CheckType.None or CheckType.Clickable)
         {
@@ -1076,9 +1079,8 @@ public partial class MyListItem : Grid, IMyRadio
         }
 
         check.IsVisible = true;
-        if (value && anime && _checkedSource is { } source)
+        if (value && anime && source is not null)
         {
-            _checkedSource = null;
             var sourcePoint = source.TranslatePoint(default, this);
             if (sourcePoint is not null && ContainerAnimation.CanAnimate(this))
             {

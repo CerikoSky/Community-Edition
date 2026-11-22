@@ -16,9 +16,12 @@ public static class PageNavigationListBuilder
         IReadOnlyList<(SubPageId Sub, MyListItem Item)> items,
         SubPageId selected)
     {
-        var target = items.FirstOrDefault(pair => pair.Sub == selected).Item;
-        if (target is not null)
-            target.SetChecked(true, false, false);
+        foreach (var (sub, item) in items)
+        {
+            var isTarget = sub == selected;
+            if (item.Checked != isTarget)
+                item.SetChecked(isTarget, false, false);
+        }
     }
 
     public static PageNavigationListResult Build(

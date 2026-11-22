@@ -310,6 +310,7 @@ public partial class TitleBar : UserControl
 
         if (!animate || !CanAnimateShell || AnimationService.IsSuspended)
         {
+            AnimationService.CancelAnimationByName("TitleBar Tab Indicator");
             transform.X = destination;
             return;
         }
