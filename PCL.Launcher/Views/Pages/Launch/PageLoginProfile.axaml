@@ -37,7 +37,8 @@
         <ui:MyCard Grid.Row="5"
                    Margin="0,0,4,0"
                    HorizontalAlignment="Center"
-                   CornerRadius="5">
+                   CornerRadius="5"
+                   Command="{Binding CreateProfileCommand}">
             <StackPanel Margin="10,3,0,3"
                         Orientation="Horizontal">
                 <ui:MyIconButton x:Name="BtnNew"
@@ -46,7 +47,7 @@
                                  Margin="0,0.5,9,0"
                                  LogoScale="1.08"
                                  SvgIcon="lucide/user-plus"
-                                 Command="{Binding CreateProfileCommand}"
+                                 IsHitTestVisible="False"
                                  ToolTip.Tip="{loc:Loc Launch.Account.Profile.Create}" />
             </StackPanel>
         </ui:MyCard>
