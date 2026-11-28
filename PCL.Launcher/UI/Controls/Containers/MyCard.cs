@@ -93,6 +93,8 @@ public class MyCard : Grid
         PointerExited += _OnPointerExited;
         PointerPressed += _OnPointerPressed;
         PointerReleased += _OnPointerReleased;
+        KeyboardActivation.Attach(this, () => ExecuteCommand(), () => Command is not null, false);
+        CommandProperty.Changed.AddClassHandler<MyCard>((card, _) => card.Focusable = card.Command is not null);
     }
 
     public CardShadow MainChrome { get; }
@@ -587,7 +589,8 @@ public class MyCard : Grid
         RestoreCommandScale();
         if (Command is not null && !_isCustomMouseDown)
         {
-            if (e.Source is not MyIconButton
+            if (e.InitialPressMouseButton == MouseButton.Left
+                && e.Source is not MyIconButton
                 && e.Source is not MyButton
                 && new Rect(Bounds.Size).Contains(e.GetPosition(this)))
                 ExecuteCommand();
@@ -649,7 +652,14 @@ public class MyCard : Grid
 
     private void RestoreCommandScale()
     {
-        ButtonAnimation.AnimateScale(this, 1d, 300, CommandScaleKey, 10, new FluentEaseOut());
+        AnimationService.CancelAnimationByName(CommandScaleKey);
+        if (ButtonAnimation.CanAnimate(this))
+            AnimationService.Run(
+                new ScaleTransformAnimation(this, 1d - ButtonAnimation.CurrentScale(this), 300,
+                    ease: new FluentEaseOut()),
+                CommandScaleKey);
+        else if (RenderTransform is ScaleTransform)
+            ButtonAnimation.SetScale(this, 1d);
     }
 
     private void ExecuteCommand()
