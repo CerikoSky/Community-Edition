@@ -555,6 +555,7 @@ public class MyCard : Grid
     private void _OnPointerExited(object? sender, PointerEventArgs e)
     {
         _isSwapMouseDown = false;
+        _isCommandMouseDown = false;
         RestoreCommandScale();
         if (HasMouseAnimation)
             AnimateShadow(false);
@@ -568,7 +569,10 @@ public class MyCard : Grid
             return;
 
         var pos = e.GetPosition(this).Y;
-        if (Command is not null && e.Source is not MyIconButton && e.Source is not MyButton)
+        _isCommandMouseDown = Command is not null
+                              && e.Source is not MyIconButton
+                              && e.Source is not MyButton;
+        if (_isCommandMouseDown)
             PressCommandScale();
 
         if (!IsSwapped && !_IsInHeader(pos))
@@ -587,9 +591,12 @@ public class MyCard : Grid
     private void _OnPointerReleased(object? sender, PointerReleasedEventArgs e)
     {
         RestoreCommandScale();
+        var isCommandPress = _isCommandMouseDown;
+        _isCommandMouseDown = false;
         if (Command is not null && !_isCustomMouseDown)
         {
-            if (e.InitialPressMouseButton == MouseButton.Left
+            if (isCommandPress
+                && e.InitialPressMouseButton == MouseButton.Left
                 && e.Source is not MyIconButton
                 && e.Source is not MyButton
                 && new Rect(Bounds.Size).Contains(e.GetPosition(this)))
@@ -637,6 +644,7 @@ public class MyCard : Grid
     }
 
     private bool _isCommandRunning;
+    private bool _isCommandMouseDown;
 
     private string CommandScaleKey => $"MyCard Command Scale {uuid}";
 
